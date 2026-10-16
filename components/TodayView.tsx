@@ -62,8 +62,11 @@ function Check() {
 function TodaySkeleton() {
   return (
     <div className="tk-stack">
+      <div className="tk-today-tabs" aria-hidden="true">
+        <Skel w={110} h={46} />
+        <Skel w={110} h={46} />
+      </div>
       <section className="tk-today-section">
-        <Skel w={180} h={34} />
         <Skel w={90} h={22} />
         {[0, 1].map((g) => (
           <div key={g} className="tk-today-group">
@@ -80,6 +83,154 @@ function TodaySkeleton() {
           </div>
         ))}
       </section>
+    </div>
+  );
+}
+
+function listCounts(data: TodayData, listId: string) {
+  const items = data.items.filter((i) => i.list_id === listId && i.active);
+  const done = new Set(data.done.map((c) => c.item_id));
+  return { total: items.length, done: items.filter((i) => done.has(i.id)).length };
+}
+
+interface ListTabsProps {
+  lists: TaskList[];
+  active: TaskList;
+  data: TodayData;
+  errors: Record<string, string>;
+  busy: Set<string>;
+  toggle: (item: TaskItem, existing: Completion | undefined) => void;
+  select: (id: string) => void;
+}
+
+function ListTabs({ lists, active, data, errors, busy, toggle, select }: ListTabsProps) {
+  const refs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [dir, setDir] = useState<"left" | "right" | null>(null);
+  const activeIdx = lists.findIndex((l) => l.id === active.id);
+
+  const pick = (idx: number, focus: boolean) => {
+    const next = lists[idx];
+    if (!next || next.id === active.id) return;
+    setDir(idx > activeIdx ? "right" : "left");
+    select(next.id);
+    if (focus) refs.current[next.id]?.focus();
+  };
+
+  const onKey = (e: React.KeyboardEvent, idx: number) => {
+    let to = -1;
+    if (e.key === "ArrowRight") to = (idx + 1) % lists.length;
+    else if (e.key === "ArrowLeft") to = (idx - 1 + lists.length) % lists.length;
+    else if (e.key === "Home") to = 0;
+    else if (e.key === "End") to = lists.length - 1;
+    if (to < 0) return;
+    e.preventDefault();
+    if (to === idx) { refs.current[lists[to].id]?.focus(); return; }
+    pick(to, true);
+  };
+
+  const doneByItem = new Map(data.done.map((c) => [c.item_id, c]));
+  const items = data.items.filter((i) => i.list_id === active.id && i.active);
+  const secs = data.sections.filter((x) => x.list_id === active.id && x.active).sort((x, y) => x.sort_order - y.sort_order);
+  const bySort = (x: TaskItem, y: TaskItem) => x.sort_order - y.sort_order;
+  const secIds = new Set(secs.map((x) => x.id));
+  const loose = items.filter((i) => !i.section_id || !secIds.has(i.section_id)).sort(bySort);
+  const doneCount = items.filter((i) => doneByItem.has(i.id)).length;
+
+  const rowsFor = (group: TaskItem[]) => (
+    <div className="tk-rows tk-today-rows">
+      {group.map((item) => {
+        const c = doneByItem.get(item.id);
+        const err = errors[item.id];
+        return (
+          <div key={item.id}>
+            <div className="tk-row">
+              <button type="button" className="tk-today-btn" aria-pressed={!!c} disabled={busy.has(item.id)} onClick={() => toggle(item, c)}>
+                <span className="tk-today-mark" aria-hidden="true"><Check /></span>
+                <span className="tk-today-text">
+                  <span className="tk-today-title">{item.title}</span>
+                  {c && <span className="tk-today-meta">Done by {c.done_by} at {timeHM(c.done_at)}</span>}
+                  {item.detail && <span className="tk-today-meta">{item.detail}</span>}
+                </span>
+              </button>
+            </div>
+            {err && (
+              <div className="tk-today-rowerr" role="alert">
+                <p>{err}</p>
+                <button type="button" className="tk-btn tk-sm" onClick={() => toggle(item, c)}>Try Again</button>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  return (
+    <div className="tk-stack">
+      <div className="tk-today-tabs" role="tablist" aria-label="Check lists">
+        {lists.map((l, idx) => {
+          const n = listCounts(data, l.id);
+          const on = l.id === active.id;
+          return (
+            <button
+              key={l.id}
+              ref={(el) => { refs.current[l.id] = el; }}
+              type="button"
+              role="tab"
+              id={`tk-tab-${l.id}`}
+              aria-selected={on}
+              aria-controls={`tk-panel-${l.id}`}
+              tabIndex={on ? 0 : -1}
+              className="tk-today-tab"
+              onClick={() => pick(idx, false)}
+              onKeyDown={(e) => onKey(e, idx)}
+            >
+              <span>{l.name}</span>
+              <span className="tk-today-meta">{n.done} of {n.total}</span>
+            </button>
+          );
+        })}
+      </div>
+      <div className="tk-today-slide">
+        <section
+          key={active.id}
+          role="tabpanel"
+          id={`tk-panel-${active.id}`}
+          aria-labelledby={`tk-tab-${active.id}`}
+          className="tk-today-section tk-today-panel"
+          data-dir={dir ?? undefined}
+        >
+          <h2 className="tk-sr">{active.name}</h2>
+          {items.length === 0 && secs.length === 0 ? (
+            <div className="tk-empty">
+              <p>No checks on this list yet.</p>
+              <Link href="/checks" className="tk-btn tk-sm">Manage Checks</Link>
+            </div>
+          ) : (
+            <>
+              <p className="tk-today-progress">{doneCount} of {items.length} done</p>
+              {loose.length > 0 && rowsFor(loose)}
+              {secs.map((sec) => {
+                const group = items.filter((i) => i.section_id === sec.id).sort(bySort);
+                const n = group.filter((i) => doneByItem.has(i.id)).length;
+                return (
+                  <div key={sec.id} className="tk-today-group">
+                    <h3 id={`tk-sec-${sec.id}`}>{sec.name}</h3>
+                    {group.length === 0 ? (
+                      <p className="tk-today-meta">No checks in {sec.name} yet.</p>
+                    ) : (
+                      <>
+                        <p className="tk-today-progress">{n} of {group.length} done</p>
+                        {rowsFor(group)}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
@@ -194,6 +345,13 @@ export function TodayView() {
     release();
   }, [date, displayName, reload, setData]);
 
+  const selectList = (id: string) => {
+    const q = new URLSearchParams();
+    if (validDate(dateParam)) q.set("date", dateParam);
+    q.set("list", id);
+    router.replace(`/?${q.toString()}`);
+  };
+
   const go = (d: string) => {
     const q = new URLSearchParams();
     if (d !== today) q.set("date", d);
@@ -235,80 +393,17 @@ export function TodayView() {
               </div>
             );
           }
-          if (listParam && lists.some((l) => l.id === listParam)) lists = lists.filter((l) => l.id === listParam);
-          const doneByItem = new Map(data.done.map((c) => [c.item_id, c]));
+          const active = lists.find((l) => l.id === listParam) ?? lists[0];
           return (
-            <div className="tk-stack">
-              {lists.map((list) => {
-                const items = data.items.filter((i) => i.list_id === list.id && i.active);
-                const secs = data.sections.filter((x) => x.list_id === list.id && x.active).sort((x, y) => x.sort_order - y.sort_order);
-                const bySort = (x: TaskItem, y: TaskItem) => x.sort_order - y.sort_order;
-                const secIds = new Set(secs.map((x) => x.id));
-                const loose = items.filter((i) => !i.section_id || !secIds.has(i.section_id)).sort(bySort);
-                const doneCount = items.filter((i) => doneByItem.has(i.id)).length;
-                const rowsFor = (group: TaskItem[]) => (
-                  <div className="tk-rows tk-today-rows">
-                    {group.map((item) => {
-                      const c = doneByItem.get(item.id);
-                      const err = errors[item.id];
-                      return (
-                        <div key={item.id}>
-                          <div className="tk-row">
-                            <button type="button" className="tk-today-btn" aria-pressed={!!c} disabled={busy.has(item.id)} onClick={() => toggle(item, c)}>
-                              <span className="tk-today-mark" aria-hidden="true"><Check /></span>
-                              <span className="tk-today-text">
-                                <span className="tk-today-title">{item.title}</span>
-                                {c && <span className="tk-today-meta">Done by {c.done_by} at {timeHM(c.done_at)}</span>}
-                                {item.detail && <span className="tk-today-meta">{item.detail}</span>}
-                              </span>
-                            </button>
-                          </div>
-                          {err && (
-                            <div className="tk-today-rowerr" role="alert">
-                              <p>{err}</p>
-                              <button type="button" className="tk-btn tk-sm" onClick={() => toggle(item, c)}>Try Again</button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-                return (
-                  <section key={list.id} className="tk-today-section" aria-labelledby={`tk-list-${list.id}`}>
-                    <h2 id={`tk-list-${list.id}`}>{list.name}</h2>
-                    {items.length === 0 && secs.length === 0 ? (
-                      <div className="tk-empty">
-                        <p>No checks on this list yet.</p>
-                        <Link href="/checks" className="tk-btn tk-sm">Manage Checks</Link>
-                      </div>
-                    ) : (
-                      <>
-                        <p className="tk-today-progress">{doneCount} of {items.length} done</p>
-                        {loose.length > 0 && rowsFor(loose)}
-                        {secs.map((sec) => {
-                          const group = items.filter((i) => i.section_id === sec.id).sort(bySort);
-                          const n = group.filter((i) => doneByItem.has(i.id)).length;
-                          return (
-                            <div key={sec.id} className="tk-today-group">
-                              <h3 id={`tk-sec-${sec.id}`}>{sec.name}</h3>
-                              {group.length === 0 ? (
-                                <p className="tk-today-meta">No checks in {sec.name} yet.</p>
-                              ) : (
-                                <>
-                                  <p className="tk-today-progress">{n} of {group.length} done</p>
-                                  {rowsFor(group)}
-                                </>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </>
-                    )}
-                  </section>
-                );
-              })}
-            </div>
+            <ListTabs
+              lists={lists}
+              active={active}
+              data={data}
+              errors={errors}
+              busy={busy}
+              toggle={toggle}
+              select={selectList}
+            />
           );
         }}
       </AsyncView>

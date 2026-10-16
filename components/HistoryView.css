@@ -30,3 +30,21 @@
 :where(.tk-app) .tk-hist-section{display:grid;gap:8px}
 :where(.tk-app) .tk-hist-skeltable{display:none}
 @media (min-width:840px){:where(.tk-app) .tk-hist-skeltable{display:grid}}
+
+:where(.tk-app) .tk-hist-tabs{display:flex;border-bottom:1px solid var(--dv-line)}
+:where(.tk-app) .tk-hist-tabs > .tk-skel{flex:1}
+:where(.tk-app) .tk-hist-tab{flex:1;display:grid;justify-items:start;align-content:center;gap:0;min-height:var(--ctl);padding:4px 12px;margin-bottom:-1px;background:none;border:0;border-bottom:2px solid transparent;color:var(--dv-ink-soft);text-align:left;cursor:pointer}
+:where(.tk-app) .tk-hist-tab:hover{background:var(--dv-wash)}
+:where(.tk-app) .tk-hist-tab[aria-selected="true"]{font-weight:700;color:var(--dv-ink);border-bottom-color:var(--dv-ink)}
+:where(.tk-app) .tk-hist-tabcap{font-size:12px;font-weight:400}
+@media (min-width:840px){
+  :where(.tk-app) .tk-hist-tab{flex:0 0 auto;min-height:32px;padding:4px 16px}
+}
+:where(.tk-app) .tk-hist-clip{overflow:hidden}
+:where(.tk-app) .tk-hist-in-r{animation:tk-hist-from-r 750ms cubic-bezier(.65,0,.35,1)}
+:where(.tk-app) .tk-hist-in-l{animation:tk-hist-from-l 750ms cubic-bezier(.65,0,.35,1)}
+@keyframes tk-hist-from-r{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@keyframes tk-hist-from-l{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+@media (prefers-reduced-motion:reduce){
+  :where(.tk-app) .tk-hist-in-r,:where(.tk-app) .tk-hist-in-l{animation:none}
+}

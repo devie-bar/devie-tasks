@@ -1,7 +1,7 @@
 "use client";
 
 import "./HistoryView.css";
-import { Suspense, useMemo } from "react";
+import { Suspense, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -108,6 +108,10 @@ function IndexSkeleton() {
 function DetailSkeleton() {
   return (
     <div className="tk-hist-section">
+      <div className="tk-hist-tabs" aria-hidden>
+        <Skel h={56} r={0} />
+        <Skel h={56} r={0} />
+      </div>
       <Skel w={160} h={28} />
       {[0, 1, 2].map((g) => (
         <div key={g} className="tk-hist-section">
@@ -193,7 +197,7 @@ function Inner() {
       <AsyncView load={load} skeleton={date ? <DetailSkeleton /> : <IndexSkeleton />}>
         {(d) => {
           if (d.key !== key) return date ? <DetailSkeleton /> : <IndexSkeleton />;
-          return date ? <Detail data={d} date={date} today={today} /> : <Index data={d} days={days} today={today} />;
+          return date ? <Detail data={d} date={date} today={today} days={days} /> : <Index data={d} days={days} today={today} />;
         }}
       </AsyncView>
     </div>
@@ -283,7 +287,11 @@ function Index({ data, days, today }: { data: Data; days: number; today: string 
   );
 }
 
-function Detail({ data, date, today }: { data: Data; date: string; today: string }) {
+function Detail({ data, date, today, days }: { data: Data; date: string; today: string; days: number }) {
+  const router = useRouter();
+  const sp = useSearchParams();
+  const [swipe, setSwipe] = useState<"r" | "l" | null>(null);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const night = useMemo(() => buildNight(date, today, data, tickedByDate(data)), [data, date, today]);
   const byItem = useMemo(() => {
     const m = new Map<string, Completion>();
@@ -306,47 +314,101 @@ function Detail({ data, date, today }: { data: Data; date: string; today: string
     return <div className="tk-empty"><p>No checks were scheduled on this date.</p></div>;
   }
 
+  const listParam = sp.get("list");
+  const activeIdx = Math.max(0, night.lists.findIndex((x) => x.list.id === listParam));
+  const l = night.lists[activeIdx];
+  const choose = (idx: number, focus: boolean) => {
+    const target = night.lists[idx];
+    if (!target || idx === activeIdx) return;
+    setSwipe(idx > activeIdx ? "r" : "l");
+    router.replace(`/history?date=${date}&list=${target.list.id}${days !== 14 ? `&days=${days}` : ""}`, { scroll: false });
+    if (focus) tabRefs.current[idx]?.focus();
+  };
+  const onKey = (e: KeyboardEvent<HTMLButtonElement>) => {
+    const n = night.lists.length;
+    let next = -1;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (activeIdx + 1) % n;
+    else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (activeIdx - 1 + n) % n;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = n - 1;
+    if (next < 0) return;
+    e.preventDefault();
+    choose(next, true);
+  };
+
+  const panel = (() => {
+    if (!l) return null;
+    const activeSecs = data.sections.filter((x) => x.list_id === l.list.id).sort((x, y) => x.sort_order - y.sort_order);
+    const secIds = new Set(activeSecs.map((x) => x.id));
+    const groups: { id: string; name: string | null; items: TaskItem[] }[] = [
+      { id: "none", name: null, items: l.items.filter((i) => !i.section_id || !secIds.has(i.section_id)) },
+      ...activeSecs.map((x) => ({ id: x.id, name: x.name as string | null, items: l.items.filter((i) => i.section_id === x.id) })),
+    ].filter((g) => g.items.length > 0);
+    return (
+      <div
+        key={l.list.id}
+        role="tabpanel"
+        id={`tk-hist-panel-${l.list.id}`}
+        aria-labelledby={`tk-hist-tab-${l.list.id}`}
+        className={`tk-hist-panel tk-hist-section${swipe ? ` tk-hist-in-${swipe}` : ""}`}
+      >
+        <h2>{l.list.name}</h2>
+        {groups.map((g) => (
+          <div key={g.id} className="tk-hist-section">
+            {g.name && (
+              <>
+                <h3>{g.name}</h3>
+                <p className="tk-hist-cap">{g.items.filter((i) => byItem.has(i.id)).length} of {g.items.length} done</p>
+              </>
+            )}
+            <div className="tk-rows">
+              {g.items.map((i) => {
+                const c = byItem.get(i.id);
+                return (
+                  <div key={i.id} className="tk-row tk-hist-row">
+                    {c ? <span className="tk-chip good">Done</span> : <span className="tk-chip danger">Not done</span>}
+                    <div className="tk-hist-title">
+                      <div>{i.title}</div>
+                      {c && <div className="tk-hist-removed">{c.done_by} at {timeHM(c.done_at)}</div>}
+                      {c?.note && <div className="tk-hist-note">{c.note}</div>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  })();
+
   return (
     <div className="tk-stack">
-      {night.lists.map((l) => {
-        const activeSecs = data.sections.filter((x) => x.list_id === l.list.id).sort((x, y) => x.sort_order - y.sort_order);
-        const secIds = new Set(activeSecs.map((x) => x.id));
-        const groups: { id: string; name: string | null; items: TaskItem[] }[] = [
-          { id: "none", name: null, items: l.items.filter((i) => !i.section_id || !secIds.has(i.section_id)) },
-          ...activeSecs.map((x) => ({ id: x.id, name: x.name as string | null, items: l.items.filter((i) => i.section_id === x.id) })),
-        ].filter((g) => g.items.length > 0);
-        return (
-          <section key={l.list.id} className="tk-hist-section">
-            <h2>{l.list.name}</h2>
-            <p className="tk-hist-cap">{l.done} of {l.items.length} done</p>
-            {groups.map((g) => (
-              <div key={g.id} className="tk-hist-section">
-                {g.name && (
-                  <>
-                    <h3>{g.name}</h3>
-                    <p className="tk-hist-cap">{g.items.filter((i) => byItem.has(i.id)).length} of {g.items.length} done</p>
-                  </>
-                )}
-                <div className="tk-rows">
-                  {g.items.map((i) => {
-                    const c = byItem.get(i.id);
-                    return (
-                      <div key={i.id} className="tk-row tk-hist-row">
-                        {c ? <span className="tk-chip good">Done</span> : <span className="tk-chip danger">Not done</span>}
-                        <div className="tk-hist-title">
-                          <div>{i.title}</div>
-                          {c && <div className="tk-hist-removed">{c.done_by} at {timeHM(c.done_at)}</div>}
-                          {c?.note && <div className="tk-hist-note">{c.note}</div>}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+      {night.lists.length > 0 && (
+        <div className="tk-hist-section">
+          <div className="tk-hist-tabs" role="tablist" aria-label="Check lists">
+            {night.lists.map((x, idx) => (
+              <button
+                key={x.list.id}
+                ref={(el) => { tabRefs.current[idx] = el; }}
+                type="button"
+                role="tab"
+                id={`tk-hist-tab-${x.list.id}`}
+                aria-selected={idx === activeIdx}
+                aria-controls={`tk-hist-panel-${x.list.id}`}
+                tabIndex={idx === activeIdx ? 0 : -1}
+                className="tk-hist-tab"
+                onClick={() => choose(idx, false)}
+                onKeyDown={onKey}
+              >
+                <span className="tk-hist-tabname">{x.list.name}</span>
+                <span className="tk-hist-tabcap">{x.done} of {x.items.length}</span>
+              </button>
             ))}
-          </section>
-        );
-      })}
+          </div>
+          <div className="tk-hist-clip">{panel}</div>
+        </div>
+      )}
       {removed.length > 0 && (
         <section className="tk-hist-section">
           <h2>Other checks</h2>

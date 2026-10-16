@@ -23,3 +23,16 @@
 :where(.tk-app) .tk-today-group{display:grid;gap:8px;align-content:start;margin-top:16px}
 :where(.tk-app) .tk-today-group h3{margin:0}
 :where(.tk-app) .tk-today-group p{margin:0}
+/* Tabs: justified full width (DESIGN.md 3.1). Selected is bold plus a 2px copper underline, never colour alone. */
+:where(.tk-app) .tk-today-tabs{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--dv-line)}
+:where(.tk-app) .tk-today-tab{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-height:var(--ctl);padding:4px 0;margin-bottom:-1px;background:none;border:0;border-bottom:2px solid transparent;color:var(--dv-ink-soft);font:inherit;font-weight:400;text-align:left;cursor:pointer}
+:where(.tk-app) .tk-today-tab:last-child:not(:first-child){align-items:flex-end;text-align:right}
+:where(.tk-app) .tk-today-tab[aria-selected="true"]{font-weight:700;color:var(--dv-ink);border-bottom-color:var(--dv-copper)}
+:where(.tk-app) .tk-today-tab[aria-selected="true"] .tk-today-meta{color:var(--dv-ink-soft)}
+/* Panel swap: slides in from the side of the picked tab (DESIGN.md 2.8). */
+:where(.tk-app) .tk-today-slide{overflow-x:clip}
+:where(.tk-app) .tk-today-panel[data-dir="right"]{animation:tk-today-in-right 750ms cubic-bezier(.65,0,.35,1)}
+:where(.tk-app) .tk-today-panel[data-dir="left"]{animation:tk-today-in-left 750ms cubic-bezier(.65,0,.35,1)}
+@keyframes tk-today-in-right{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@keyframes tk-today-in-left{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+@media (prefers-reduced-motion:reduce){:where(.tk-app) .tk-today-panel[data-dir]{animation:none}}
