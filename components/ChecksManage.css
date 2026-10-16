@@ -1,0 +1,51 @@
+/* Manage check lists and their checks (/checks). Tokens only, see DESIGN.md Part 2. */
+:where(.tk-app) .tk-manage-stack{display:grid;gap:24px}
+:where(.tk-app) .tk-manage-back{display:inline-flex;align-items:center;min-height:var(--ctl);color:var(--dv-green);text-decoration:underline;text-underline-offset:3px;justify-self:start}
+:where(.tk-app) .tk-manage-lists{display:grid;gap:32px;justify-items:start}
+:where(.tk-app) .tk-manage-index{display:grid;width:100%}
+:where(.tk-app) .tk-manage-link{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 12px;min-height:56px;padding:8px 0;border-bottom:1px solid var(--dv-line);color:var(--dv-ink);text-decoration:none}
+:where(.tk-app) .tk-manage-link:hover{background:var(--dv-wash)}
+:where(.tk-app) .tk-manage-link-name{font-weight:500;overflow-wrap:anywhere}
+:where(.tk-app) .tk-manage-link-meta{grid-column:1 / -1;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13.5px;color:var(--dv-ink-soft)}
+:where(.tk-app) .tk-manage-count{font-variant-numeric:tabular-nums;font-size:13.5px;color:var(--dv-ink-soft);white-space:nowrap}
+@media (min-width:840px){
+  :where(.tk-app) .tk-manage-link{grid-template-columns:minmax(0,1fr) auto auto auto;gap:12px}
+  :where(.tk-app) .tk-manage-link-meta{grid-column:auto;display:contents}
+}
+:where(.tk-app) .tk-manage-editor{display:grid;gap:32px}
+@media (min-width:840px){
+  :where(.tk-app) .tk-manage-editor{gap:48px}
+  :where(.tk-app) .tk-manage-fields{order:1}
+  :where(.tk-app) .tk-manage-bar{order:2}
+  :where(.tk-app) .tk-manage-checks{order:3}
+  :where(.tk-app) .tk-manage-danger{order:4}
+}
+:where(.tk-app) .tk-manage-fields{display:grid;gap:24px;max-width:560px}
+:where(.tk-app) .tk-manage-select{min-height:var(--ctl);width:100%;padding:10px 16px;border:1px solid var(--dv-line);border-radius:var(--dv-radius-control);background:var(--dv-surface);color:var(--dv-ink)}
+:where(.tk-app) .tk-manage-fieldlabel{font-size:13.5px;font-weight:500;color:var(--dv-ink)}
+:where(.tk-app) .tk-manage-days{display:flex;flex-wrap:wrap;gap:8px}
+:where(.tk-app) .tk-manage-day{min-width:44px;min-height:var(--ctl);padding:0 8px;display:inline-flex;align-items:center;justify-content:center;gap:4px;border:1px solid var(--dv-line);border-radius:var(--dv-radius-control);background:var(--dv-surface);color:var(--dv-ink);font-weight:500;transition:background .15s ease-out,border-color .15s ease-out}
+@media (min-width:840px){:where(.tk-app) .tk-manage-day{min-width:48px}}
+:where(.tk-app) .tk-manage-day[aria-pressed=true]{background:var(--dv-green);border-color:var(--dv-green);color:var(--dv-surface)}
+:where(.tk-app) .tk-manage-day[aria-pressed=true]::before{content:"";width:5px;height:9px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+:where(.tk-app) .tk-manage-quick{display:flex;flex-wrap:wrap;gap:8px}
+:where(.tk-app) .tk-manage-switch{justify-self:start;min-width:120px}
+:where(.tk-app) .tk-manage-switch[aria-checked=true]::before{content:"";width:5px;height:9px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+:where(.tk-app) .tk-manage-bar{align-items:center;flex-wrap:wrap;margin:0 calc(-1 * var(--gutter))}
+@media (min-width:840px){:where(.tk-app) .tk-manage-bar{margin:0}}
+:where(.tk-app) .tk-manage-saved{color:var(--dv-good);font-weight:500}
+:where(.tk-app) .tk-manage-inlineerr{display:flex;flex-wrap:wrap;align-items:center;gap:8px;color:var(--dv-danger)}
+:where(.tk-app) .tk-manage-inlineerr p{margin:0}
+:where(.tk-app) .tk-manage-fielderr{margin:0;color:var(--dv-danger);font-size:13.5px}
+:where(.tk-app) .tk-manage-checks{display:grid;gap:16px}
+:where(.tk-app) .tk-row.tk-manage-check{display:grid;align-items:stretch;gap:8px;padding:12px 0}
+:where(.tk-app) .tk-manage-check.is-paused .tk-input{color:var(--dv-ink-soft)}
+:where(.tk-app) .tk-manage-check-head{display:flex;align-items:center;gap:8px}
+:where(.tk-app) .tk-manage-check-head .tk-input{flex:1 1 auto;min-width:0}
+:where(.tk-app) .tk-manage-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+:where(.tk-app) .tk-manage-confirm{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+:where(.tk-app) .tk-manage-confirm p{margin:0;flex:1 1 100%}
+:where(.tk-app) .tk-manage-add{display:flex;flex-wrap:wrap;gap:8px}
+:where(.tk-app) .tk-manage-add .tk-input{flex:1 1 220px}
+:where(.tk-app) .tk-manage-danger{display:grid;gap:12px;justify-items:start}
+:where(.tk-app) .tk-manage-danger p{margin:0;max-width:70ch}

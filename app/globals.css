@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* De Vie brand fonts. Served from /public/fonts. */
+
+/* PP Editorial New, display / headings */
+@font-face { font-family: "PP Editorial New"; src: url("/fonts/PPEditorialNew-Ultralight.woff2") format("woff2"); font-weight: 200; font-style: normal; font-display: swap; }
+@font-face { font-family: "PP Editorial New"; src: url("/fonts/PPEditorialNew-UltralightItalic.woff2") format("woff2"); font-weight: 200; font-style: italic; font-display: swap; }
+@font-face { font-family: "PP Editorial New"; src: url("/fonts/PPEditorialNew-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "PP Editorial New"; src: url("/fonts/PPEditorialNew-Italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "PP Editorial New"; src: url("/fonts/PPEditorialNew-Ultrabold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "PP Editorial New"; src: url("/fonts/PPEditorialNew-UltraboldItalic.woff2") format("woff2"); font-weight: 700; font-style: italic; font-display: swap; }
+
+/* Epilogue, body / UI */
+@font-face { font-family: "Epilogue"; src: url("/fonts/Epilogue-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Epilogue"; src: url("/fonts/Epilogue-Italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Epilogue"; src: url("/fonts/Epilogue-Medium.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Epilogue"; src: url("/fonts/Epilogue-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Epilogue"; src: url("/fonts/Epilogue-Bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+
+
+:root {
+  color-scheme: light;
+  --c-ink:23 32 29; --c-ink-soft:92 107 102; --c-ink-muted:139 151 143; --c-paper:251 251 248; --c-card:255 255 255; --c-line:230 232 226; --c-wash:232 240 238; --c-good:30 122 87; --c-good-tint:229 242 236; --c-good-line:191 224 205; --c-warn:169 120 26; --c-warn-tint:246 236 207; --c-warn-line:227 211 173; --c-danger:192 57 43; --c-danger-tint:247 225 222; --c-danger-line:224 184 178; --c-info:29 95 168; --c-info-tint:230 238 250; --c-info-line:194 213 240;
+}
+
+body {
+  background-color: rgb(var(--c-paper));
+  color: rgb(var(--c-ink));
+  -webkit-font-smoothing: antialiased;
+}
+
+/* DESIGN.md Part 2.3. Epilogue is the working face; PP Editorial New is the
+   display face and is ALWAYS set at -0.05em, per the brand book. */
+body {
+  font-family: "Epilogue", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+.font-display,
+.display {
+  font-family: "PP Editorial New", Cambria, "Hoefler Text", Georgia, serif;
+  letter-spacing: -0.05em;
+  font-weight: 200;
+}
+
+/* ------------------------------------------------------------------ Tasks
+   Ported from the prototype's stylesheet, which follows DESIGN.md Part 2.
+   Every class carries the tk- prefix and sits under :where(.tk-app) so it has
+   no specificity of its own and Tailwind utilities (EstateNav, SignOutButton)
+   still win where they are used. */
+:root {
+  --dv-green:#025B4C; --dv-green-2:#0B7A63; --dv-green-soft:#71C3C4;
+  --dv-copper:#E16000; --dv-copper-deep:#B24700; --dv-copper-soft:#F0B37A;
+  --dv-paper:#FBFBF8; --dv-surface:#FFFFFF; --dv-ink:#17201D; --dv-ink-soft:#5C6B66; --dv-line:#E6E8E2;
+  --dv-wash:#F4F1EC; --dv-skeleton:#EFF0EC; --dv-skeleton-high:#F7F8F5;
+  --dv-good:#1E7A57; --dv-good-tint:#E5F2EC; --dv-good-line:#BFE0CD;
+  --dv-warn:#A9781A; --dv-warn-tint:#F6ECCF; --dv-warn-line:#E3D3AD;
+  --dv-danger:#C0392B; --dv-danger-tint:#F7E1DE; --dv-danger-line:#E0B8B2;
+  --dv-info:#1D5FA8; --dv-info-tint:#E6EEFA; --dv-info-line:#C2D5F0;
+  --dv-radius-control:10px; --dv-radius-chip:2px; --dv-radius-module:12px; --dv-radius-inner:8px;
+  --dv-shadow-overlay:0 6px 20px rgba(2,91,76,.07);
+  --dv-display:"PP Editorial New",Cambria,"Hoefler Text",Georgia,serif;
+  --dv-ui:"Epilogue","Segoe UI",system-ui,-apple-system,sans-serif;
+  --gutter:16px; --ctl:44px;
+}
+@media (min-width:600px){:root{--gutter:24px}}
+@media (min-width:840px){:root{--gutter:32px;--ctl:32px}}
+.tk-app{font-size:15px;line-height:1.55}
+.tk-app *,.tk-app *::before,.tk-app *::after{box-sizing:border-box}
+:where(.tk-app) button,:where(.tk-app) input,:where(.tk-app) textarea,:where(.tk-app) select{font:inherit;color:inherit}
+:where(.tk-app) button{cursor:pointer}
+:where(.tk-app) :focus-visible{outline:2px solid var(--dv-green-2);outline-offset:2px}
+:where(.tk-app) .tk-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+:where(.tk-app) h1,:where(.tk-app) h2,:where(.tk-app) h3,:where(.tk-app) .tk-display{font-family:var(--dv-display);letter-spacing:-.05em;font-weight:200;margin:0}
+:where(.tk-app) h1{font-size:40px;line-height:1.05;text-wrap:balance}
+:where(.tk-app) h2{font-size:26px;line-height:1.15}
+:where(.tk-app) h3{font-size:21px;line-height:1.2}
+:where(.tk-app) .tk-label{font-size:11px;line-height:1.4;text-transform:uppercase;letter-spacing:.12em;font-weight:600;color:var(--dv-ink-soft)}
+:where(.tk-app) .tk-caption{font-size:12px;line-height:1.45;color:var(--dv-ink-soft)}
+:where(.tk-app) .tk-body-s{font-size:13.5px;line-height:1.5}
+:where(.tk-app) .tk-num{font-variant-numeric:tabular-nums}
+:where(.tk-app) a{color:inherit}
+/* The green strip. Matches the Library's .dv-top (devie-archive/components/Archive.jsx): three columns,
+   brand left, sections justified in the middle, account controls right; collapsed to a Menu button. */
+:where(.tk-app) .tk-top{position:sticky;top:0;z-index:30;background:var(--dv-green);color:#fff}
+:where(.tk-app) .tk-top-in{max-width:1100px;margin:0 auto;padding:16px var(--gutter);display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:28px}
+:where(.tk-app) .tk-top-in.is-compact{grid-template-columns:1fr auto;gap:12px}
+:where(.tk-app) .tk-top-in.is-compact > .tk-who{display:none}
+:where(.tk-app) .tk-top-in.is-compact > .tk-navbtn{justify-self:end}
+:where(.tk-app) .tk-top-in > :first-child{justify-self:start}
+/* One top-level section today, so it sits left beside the wordmark; with several they justify across the middle. */
+:where(.tk-app) .tk-top-in > .tk-toptabs{justify-self:stretch;justify-content:flex-start;min-width:0}
+:where(.tk-app) .tk-top-in > .tk-who{justify-self:end}
+:where(.tk-app) .tk-brandrow{display:flex;align-items:center;gap:12px;min-width:0}
+:where(.tk-app) .tk-brand{display:block;flex:none;line-height:0}
+:where(.tk-app) .tk-brand:hover{opacity:.72}
+:where(.tk-app) .tk-brandbtn{display:flex;align-items:center;gap:8px;min-height:var(--ctl);background:none;border:0;padding:0;color:#fff;cursor:pointer;line-height:0}
+:where(.tk-app) .tk-brandbtn .tk-switch-caret{line-height:1;font-size:12px}
+:where(.tk-app) .tk-logo{height:36px;width:auto;display:block}
+:where(.tk-app) .tk-switch{display:flex;align-items:center;gap:6px;min-height:var(--ctl);padding:0 8px;background:none;border:0;color:#fff;font-size:14px;font-weight:500;white-space:nowrap}
+:where(.tk-app) .tk-switch-caret{color:rgba(255,255,255,.7)}
+:where(.tk-app) .tk-top :focus-visible{outline-color:var(--dv-copper-soft)}
+:where(.tk-app) .tk-toptabs{display:flex;gap:2px;flex-wrap:wrap}
+:where(.tk-app) .tk-tab{display:inline-flex;align-items:center;min-height:var(--ctl);background:none;border:0;border-bottom:2px solid transparent;font-family:var(--dv-display);font-size:19px;font-weight:200;letter-spacing:-.05em;text-transform:uppercase;text-decoration:none;line-height:1.1;color:var(--dv-copper-soft);padding:9px 11px;cursor:pointer}
+:where(.tk-app) .tk-tab.on{color:#fff;border-bottom-color:var(--dv-copper)}
+:where(.tk-app) .tk-tab:hover{color:#fff}
+:where(.tk-app) .tk-subnav{display:none;background:var(--dv-surface);border-bottom:2px solid var(--dv-copper)}
+@media (min-width:840px){:where(.tk-app) .tk-subnav{display:block}}
+:where(.tk-app) .tk-subnav-in{max-width:1100px;margin:0 auto;padding:0 var(--gutter);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+:where(.tk-app) .tk-subtab{font-family:var(--dv-display);font-weight:200;font-size:16px;letter-spacing:-.05em;text-transform:uppercase;color:var(--dv-ink-soft);text-decoration:none;padding:12px 12px;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;line-height:1.1}
+:where(.tk-app) .tk-subtab:hover{color:var(--dv-ink)}
+:where(.tk-app) .tk-subtab.on{color:var(--dv-copper-deep);border-bottom-color:var(--dv-copper)}
+@media (max-width:839px){:where(.tk-app) .tk-tab{padding:8px 14px;min-height:44px}}
+:where(.tk-app) .tk-navmeasure{position:absolute;left:0;right:0;top:0;height:0;overflow:hidden;visibility:hidden;pointer-events:none}
+:where(.tk-app) .tk-navmeasure .tk-toptabs{width:max-content;flex-wrap:nowrap}
+:where(.tk-app) .tk-navbtn{display:flex;align-items:center;justify-content:center;gap:8px;min-width:44px;min-height:44px;padding:9px 12px;background:transparent;border:1px solid var(--dv-copper-soft);border-radius:var(--dv-radius-control);color:#fff}
+:where(.tk-app) .tk-burger{display:block;position:relative;width:22px;height:14px}
+:where(.tk-app) .tk-burger i{position:absolute;left:0;right:0;height:1.5px;background:currentColor;border-radius:1px;transition:transform .28s cubic-bezier(.65,0,.35,1),top .28s cubic-bezier(.65,0,.35,1)}
+:where(.tk-app) .tk-burger i:first-child{top:0}
+:where(.tk-app) .tk-burger i:last-child{top:12.5px}
+:where(.tk-app) .tk-navbtn[aria-expanded="true"] .tk-burger i{top:6.25px}
+:where(.tk-app) .tk-navbtn[aria-expanded="true"] .tk-burger i:first-child{transform:rotate(45deg)}
+:where(.tk-app) .tk-navbtn[aria-expanded="true"] .tk-burger i:last-child{transform:rotate(-45deg)}
+@media (prefers-reduced-motion:reduce){:where(.tk-app) .tk-burger i{transition:none}}
+:where(.tk-app) .tk-navbtn:hover,:where(.tk-app) .tk-navbtn[aria-expanded="true"]{background:rgba(255,255,255,.09)}
+:where(.tk-app) .tk-navpanel{position:absolute;top:100%;left:0;right:0;z-index:60;background:var(--dv-paper);border-bottom:2px solid var(--dv-copper);box-shadow:var(--dv-shadow-overlay);max-height:calc(100dvh - 72px);overflow-y:auto;color:var(--dv-ink)}
+:where(.tk-app) .tk-navpanel-in{max-width:1100px;margin:0 auto;padding:8px var(--gutter) 12px;display:flex;flex-direction:column}
+:where(.tk-app) .tk-navpanel-item{display:flex;align-items:center;width:100%;min-height:44px;padding:6px 12px;background:none;border:0;border-radius:2px;text-align:left;text-decoration:none;font-family:var(--dv-display);font-size:21px;font-weight:200;letter-spacing:-.05em;text-transform:uppercase;line-height:1.2;color:var(--dv-ink-soft)}
+:where(.tk-app) .tk-navpanel-item:hover{background:var(--dv-line);color:var(--dv-ink)}
+:where(.tk-app) .tk-navpanel-item.on{color:var(--dv-copper-deep)}
+:where(.tk-app) .tk-navpanel a:focus-visible,:where(.tk-app) .tk-navpanel button:focus-visible{outline:2px solid var(--dv-green-2);outline-offset:-2px}
+:where(.tk-app) .tk-navpanel-acct{margin-top:10px;padding-top:12px;border-top:1px solid var(--dv-line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+:where(.tk-app) .tk-navpanel-acct .tk-st{color:var(--dv-ink-soft)}
+:where(.tk-app) .tk-navpanel-acct .tk-ctl{color:var(--dv-ink);border-color:var(--dv-line)}
+:where(.tk-app) .tk-navpanel-acct .tk-ctl:hover{background:var(--dv-line)}
+:where(.tk-app) .tk-who{display:flex;align-items:center;gap:12px}
+:where(.tk-app) .tk-st{font-size:12px;color:var(--dv-green-soft);white-space:nowrap}
+:where(.tk-app) .tk-ctl{min-height:var(--ctl);background:transparent;border:1px solid var(--dv-copper-soft);color:#fff;font-size:12.5px;letter-spacing:.03em;padding:0 14px;border-radius:var(--dv-radius-control);cursor:pointer;text-transform:capitalize}
+:where(.tk-app) .tk-ctl:hover{background:rgba(255,255,255,.09)}
+/* Account menu (matches schedule.devie.bar's umenu): avatar + name + caret, opens to who is signed in and Sign out. */
+:where(.tk-app) .tk-um{position:relative}
+:where(.tk-app) .tk-um-btn{display:inline-flex;align-items:center;gap:8px;min-height:var(--ctl);padding:0 12px 0 6px;background:transparent;border:1px solid var(--dv-copper-soft);border-radius:var(--dv-radius-control);color:#fff;font-family:inherit;font-size:13px;cursor:pointer}
+:where(.tk-app) .tk-um-btn:hover,:where(.tk-app) .tk-um-btn[aria-expanded="true"]{background:rgba(255,255,255,.09)}
+:where(.tk-app) .tk-um-av{width:24px;height:24px;border-radius:50%;background:var(--dv-copper);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none}
+:where(.tk-app) .tk-um-nm{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:where(.tk-app) .tk-um-cx{color:var(--dv-copper-soft);font-size:11px}
+:where(.tk-app) .tk-um-pop{position:absolute;right:0;top:calc(100% + 6px);min-width:224px;background:var(--dv-surface);color:var(--dv-ink);border:1px solid var(--dv-line);border-radius:var(--dv-radius-control);box-shadow:var(--dv-shadow-overlay);padding:8px;z-index:70}
+:where(.tk-app) .tk-um-hd{padding:8px 10px 10px;border-bottom:1px solid var(--dv-line);margin-bottom:6px}
+:where(.tk-app) .tk-um-hd b{display:block;font-size:13.5px}
+:where(.tk-app) .tk-um-hd span{display:block;font-size:11px;color:var(--dv-ink-soft);overflow:hidden;text-overflow:ellipsis}
+:where(.tk-app) .tk-um-item{display:flex;align-items:center;width:100%;min-height:var(--ctl);padding:0 10px;background:transparent;border:0;border-radius:var(--dv-radius-inner);color:var(--dv-ink);font-family:inherit;font-size:13px;text-align:left;cursor:pointer}
+:where(.tk-app) .tk-um-item:hover{background:var(--dv-line)}
+:where(.tk-app) .tk-um-row{justify-content:space-between}
+:where(.tk-app) .tk-um-sep{height:1px;background:var(--dv-line);margin:6px 0}
+:where(.tk-app) .tk-um-sw{width:38px;height:22px;border-radius:999px;background:var(--dv-line);border:1px solid var(--dv-ink-soft);position:relative;flex:none;transition:background .15s}
+:where(.tk-app) .tk-um-sw.on{background:var(--dv-green-2);border-color:var(--dv-green-2)}
+:where(.tk-app) .tk-um-sw i{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+:where(.tk-app) .tk-um-sw.on i{left:18px}
+:where(.tk-app) .tk-wrap{max-width:1100px;margin:0 auto;padding:32px var(--gutter) calc(96px + env(safe-area-inset-bottom,0px))}
+@media (min-width:840px){
+  :where(.tk-app) .tk-wrap{padding-top:48px}
+}
+:where(.tk-app) main{min-width:0}
+:where(.tk-app) .tk-lede{font-size:17px;line-height:1.55;color:var(--dv-ink-soft);max-width:70ch;margin:12px 0 0}
+:where(.tk-app) .tk-stack{display:grid;gap:32px}
+@media (min-width:840px){
+  :where(.tk-app) .tk-stack{gap:48px}
+}
+:where(.tk-app) .tk-f{display:grid;gap:8px}
+:where(.tk-app) .tk-f label{font-size:13.5px;font-weight:500;color:var(--dv-ink)}
+:where(.tk-app) .tk-f textarea,:where(.tk-app) .tk-f input[type=text],:where(.tk-app) .tk-f input[type=date],:where(.tk-app) .tk-f input[type=number]{width:100%;background:var(--dv-surface);border:1px solid var(--dv-line);border-radius:var(--dv-radius-control);padding:10px 16px;min-height:var(--ctl)}
+:where(.tk-app) .tk-f textarea{min-height:72px;resize:vertical}
+/* ------------------------------------------------------------------ Tasks primitives
+   Buttons are Title Case in CSS (DESIGN.md principle 10). Controls are 44px below 840px, 32px above (2.7). */
+:where(.tk-app) .tk-btn{min-height:var(--ctl);padding:0 16px;border-radius:var(--dv-radius-control);border:1px solid var(--dv-line);background:var(--dv-surface);font-weight:500;text-transform:capitalize;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background .15s ease-out,border-color .15s ease-out}
+:where(.tk-app) .tk-btn:hover:not([disabled]){background:var(--dv-wash)}
+:where(.tk-app) .tk-btn[disabled]{opacity:.6;cursor:default}
+:where(.tk-app) .tk-btn.tk-primary{background:var(--dv-copper);border-color:var(--dv-copper);color:var(--dv-ink)}
+:where(.tk-app) .tk-btn.tk-primary:hover:not([disabled]){background:var(--dv-copper-soft)}
+:where(.tk-app) .tk-btn.tk-green{background:var(--dv-green);border-color:var(--dv-green);color:#fff}
+:where(.tk-app) .tk-btn.tk-green:hover:not([disabled]){background:var(--dv-green-2);border-color:var(--dv-green-2)}
+:where(.tk-app) .tk-btn.tk-quiet{border-color:transparent;background:none;color:var(--dv-ink-soft)}
+:where(.tk-app) .tk-btn.tk-sm{min-height:var(--ctl);padding:0 12px;font-size:13.5px}
+@media (min-width:840px){:where(.tk-app) .tk-btn.tk-sm{min-height:32px}}
+:where(.tk-app) .tk-input{min-height:var(--ctl);width:100%;padding:10px 16px;border:1px solid var(--dv-line);border-radius:var(--dv-radius-control);background:var(--dv-surface);color:var(--dv-ink)}
+/* Skeleton: flat fill, one 1.4s left to right sweep, none under reduced motion (DESIGN.md 3.5). */
+:where(.tk-app) .tk-skel{display:block;background:var(--dv-skeleton);position:relative;overflow:hidden}
+:where(.tk-app) .tk-skel::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--dv-skeleton-high),transparent);transform:translateX(-100%);animation:tk-sweep 1.4s linear infinite}
+@keyframes tk-sweep{to{transform:translateX(100%)}}
+@media (prefers-reduced-motion:reduce){:where(.tk-app) .tk-skel::after{animation:none;display:none}}
+:where(.tk-app) .tk-err{display:grid;gap:12px;justify-items:start;color:var(--dv-danger)}
+:where(.tk-app) .tk-err p{margin:0;max-width:70ch}
+/* Empty is a line, not a box (DESIGN.md 3.3). */
+:where(.tk-app) .tk-empty{display:grid;gap:12px;justify-items:start;color:var(--dv-ink-soft);max-width:70ch}
+:where(.tk-app) .tk-empty p{margin:0}
+/* A check row: the whole row is the 44px target. Status is a word plus a mark, never colour alone. */
+:where(.tk-app) .tk-rows{display:grid}
+:where(.tk-app) .tk-row{display:flex;align-items:center;gap:12px;min-height:var(--ctl);padding:8px 0;border-bottom:1px solid var(--dv-line)}
+:where(.tk-app) .tk-row:nth-of-type(even){background:var(--dv-wash)}
+:where(.tk-app) .tk-chip{display:inline-flex;align-items:center;min-height:24px;padding:0 8px;border-radius:var(--dv-radius-chip);border:1px solid var(--dv-line);font-size:12px;font-weight:500}
+:where(.tk-app) .tk-chip.good{background:var(--dv-good-tint);border-color:var(--dv-good-line);color:var(--dv-good)}
+:where(.tk-app) .tk-chip.warn{background:var(--dv-warn-tint);border-color:var(--dv-warn-line);color:var(--dv-warn)}
+:where(.tk-app) .tk-chip.danger{background:var(--dv-danger-tint);border-color:var(--dv-danger-line);color:var(--dv-danger)}
+/* Sticky commit bar below 840 (DESIGN.md 3.4). Shadow is allowed on sticky bars. */
+:where(.tk-app) .tk-bar{position:sticky;bottom:0;z-index:20;padding:12px var(--gutter) calc(12px + env(safe-area-inset-bottom));background:var(--dv-surface);border-top:1px solid var(--dv-line);box-shadow:var(--dv-shadow-overlay);display:flex;gap:8px}
+@media (min-width:840px){:where(.tk-app) .tk-bar{position:static;box-shadow:none;border:0;padding:0;background:none}}
+
+/* Dark mode (De Vie palette: petrol teal on charcoal). One switch in the account menu; same key in every app. */
+html[data-theme="dark"]{color-scheme:dark;--c-ink:231 236 238; --c-ink-soft:148 163 172; --c-ink-muted:120 134 143; --c-paper:15 20 23; --c-card:22 30 34; --c-line:42 53 59; --c-wash:29 38 43; --c-good:74 192 141; --c-good-tint:16 40 31; --c-good-line:44 94 66; --c-warn:227 160 58; --c-warn-tint:43 34 16; --c-warn-line:94 74 36; --c-danger:235 120 108; --c-danger-tint:48 24 22; --c-danger-line:94 44 40; --c-info:110 168 230; --c-info-tint:17 33 51; --c-info-line:40 70 110;}
+html[data-theme="dark"] .text-brand,html[data-theme="dark"] .text-brand-deep{color:#71C3C4}
+html[data-theme="dark"] .bg-brand-wash .text-brand{color:#71C3C4}
+html[data-theme="dark"]{--dv-paper:#0F1417;--dv-surface:#161E22;--dv-ink:#E7ECEE;--dv-ink-soft:#94A3AC;--dv-line:#2A353B;--dv-wash:#1D262B;--dv-skeleton:#1D262B;--dv-skeleton-high:#26323A;--dv-copper-deep:#F0B37A;--dv-good:#4AC08D;--dv-good-tint:#10281F;--dv-good-line:#2C5E42;--dv-warn:#E3A03A;--dv-warn-tint:#2B2210;--dv-warn-line:#5E4A24;--dv-danger:#EB786C;--dv-danger-tint:#301816;--dv-danger-line:#5E2C28;--dv-info:#6EA8E6;--dv-info-tint:#112133;--dv-info-line:#28466E}
+/* --dv-ink doubles as a fill in places; the green strip keeps its own white text */

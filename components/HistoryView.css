@@ -1,0 +1,32 @@
+:where(.tk-app) .tk-hist-range{display:flex;gap:8px;flex-wrap:wrap}
+:where(.tk-app) .tk-hist-range .tk-btn{min-width:64px}
+:where(.tk-app) .tk-hist-range .tk-btn[aria-pressed="true"]{background:var(--dv-ink);border-color:var(--dv-ink);color:var(--dv-surface)}
+:where(.tk-app) .tk-hist-cap{margin:0;color:var(--dv-ink-soft);font-size:13.5px}
+:where(.tk-app) .tk-hist-back{display:inline-flex;align-items:center;min-height:var(--ctl);color:var(--dv-ink-soft);text-decoration:underline;text-underline-offset:3px}
+:where(.tk-app) .tk-hist-group{display:grid;gap:4px}
+:where(.tk-app) .tk-hist-item{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:12px;row-gap:2px;min-height:56px;padding:8px 0;border-bottom:1px solid var(--dv-line);color:inherit;text-decoration:none}
+:where(.tk-app) .tk-hist-item:nth-of-type(even){background:var(--dv-wash)}
+:where(.tk-app) .tk-hist-date{font-weight:500}
+:where(.tk-app) .tk-hist-counts{grid-column:1;color:var(--dv-ink-soft);font-size:13.5px;font-weight:600}
+:where(.tk-app) .tk-hist-item .tk-chip{grid-column:2;grid-row:1 / span 2}
+:where(.tk-app) .tk-hist-table{display:none;width:100%;border-collapse:collapse;text-align:left}
+:where(.tk-app) .tk-hist-table th{padding:8px 12px;border-bottom:1px solid var(--dv-line);color:var(--dv-ink-soft);font-weight:500;font-size:13.5px;text-align:left}
+:where(.tk-app) .tk-hist-table td{padding:8px 12px;border-bottom:1px solid var(--dv-line);text-align:left}
+:where(.tk-app) .tk-hist-table tbody tr{cursor:pointer}
+:where(.tk-app) .tk-hist-table tbody tr:nth-child(even){background:var(--dv-wash)}
+:where(.tk-app) .tk-hist-table tbody tr:hover{background:var(--dv-wash)}
+:where(.tk-app) .tk-hist-table a{display:inline-flex;align-items:center;min-height:32px;color:inherit;font-weight:500;text-decoration:underline;text-underline-offset:3px}
+@media (min-width:840px){
+  :where(.tk-app) .tk-hist-list{display:none}
+  :where(.tk-app) .tk-hist-table{display:table}
+}
+:where(.tk-app) .tk-hist-line{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:12px;row-gap:2px}
+:where(.tk-app) .tk-hist-line .tk-chip{grid-row:1}
+:where(.tk-app) .tk-hist-who{min-width:0;overflow-wrap:anywhere}
+:where(.tk-app) .tk-hist-note{margin:0;color:var(--dv-ink-soft);font-size:13.5px;overflow-wrap:anywhere}
+:where(.tk-app) .tk-hist-row{align-items:flex-start}
+:where(.tk-app) .tk-hist-title{flex:1;min-width:0;overflow-wrap:anywhere}
+:where(.tk-app) .tk-hist-removed{color:var(--dv-ink-soft);font-size:13.5px}
+:where(.tk-app) .tk-hist-section{display:grid;gap:8px}
+:where(.tk-app) .tk-hist-skeltable{display:none}
+@media (min-width:840px){:where(.tk-app) .tk-hist-skeltable{display:grid}}

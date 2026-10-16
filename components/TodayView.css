@@ -1,0 +1,22 @@
+/* Today view. Tokens only, from DESIGN.md Part 2. */
+:where(.tk-app) .tk-today-head{display:grid;gap:12px;justify-items:start}
+:where(.tk-app) .tk-today-head h1{margin:0}
+:where(.tk-app) .tk-today-nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+:where(.tk-app) .tk-today-date{font-variant-numeric:tabular-nums;color:var(--dv-ink-soft);padding:0 8px;min-width:96px}
+:where(.tk-app) .tk-today-section{display:grid;gap:8px;align-content:start}
+:where(.tk-app) .tk-today-section h2{margin:0}
+:where(.tk-app) .tk-today-progress{margin:0;font-variant-numeric:tabular-nums;color:var(--dv-ink-soft)}
+:where(.tk-app) .tk-today-rows .tk-row{padding:0;min-height:62px;box-sizing:border-box}
+:where(.tk-app) .tk-today-btn{flex:1;min-width:0;display:flex;align-items:center;gap:12px;min-height:61px;padding:8px 8px 8px 0;background:transparent;border:0;color:var(--dv-ink);font:inherit;text-align:left;cursor:pointer}
+:where(.tk-app) .tk-today-btn[disabled]{cursor:default;opacity:.7}
+:where(.tk-app) .tk-today-mark{flex:none;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--dv-ink-soft);border-radius:var(--dv-radius-chip);background:var(--dv-surface);color:var(--dv-surface)}
+:where(.tk-app) .tk-today-mark svg{width:16px;height:16px;display:none}
+:where(.tk-app) .tk-today-btn[aria-pressed="true"] .tk-today-mark{background:var(--dv-green);border-color:var(--dv-green)}
+:where(.tk-app) .tk-today-btn[aria-pressed="true"] .tk-today-mark svg{display:block}
+:where(.tk-app) .tk-today-text{display:grid;gap:2px;min-width:0}
+:where(.tk-app) .tk-today-title{overflow-wrap:anywhere}
+:where(.tk-app) .tk-today-meta{font-size:12px;line-height:1.45;color:var(--dv-ink-soft)}
+:where(.tk-app) .tk-today-rowerr{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:0 0 8px;color:var(--dv-danger)}
+:where(.tk-app) .tk-today-rowerr p{margin:0}
+:where(.tk-app) .tk-today-skelrow{display:flex;align-items:center;gap:12px;height:62px;box-sizing:border-box;border-bottom:1px solid var(--dv-line)}
+:where(.tk-app) .tk-today-skeltext{flex:1;display:grid;gap:6px}
