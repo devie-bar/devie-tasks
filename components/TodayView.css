@@ -20,3 +20,6 @@
 :where(.tk-app) .tk-today-rowerr p{margin:0}
 :where(.tk-app) .tk-today-skelrow{display:flex;align-items:center;gap:12px;height:62px;box-sizing:border-box;border-bottom:1px solid var(--dv-line)}
 :where(.tk-app) .tk-today-skeltext{flex:1;display:grid;gap:6px}
+:where(.tk-app) .tk-today-group{display:grid;gap:8px;align-content:start;margin-top:16px}
+:where(.tk-app) .tk-today-group h3{margin:0}
+:where(.tk-app) .tk-today-group p{margin:0}

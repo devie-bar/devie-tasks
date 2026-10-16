@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useLoad } from "@/lib/useLoad";
 import { AsyncView, Skel } from "@/components/AsyncView";
-import { isoWeekday, type Completion, type TaskItem, type TaskList } from "@/lib/types";
+import { isoWeekday, type Completion, type TaskItem, type TaskList, type TaskSection } from "@/lib/types";
 import { serviceDateNow, timeHM } from "@/lib/paris";
 
 const RANGES = [14, 30, 60];
@@ -18,6 +18,7 @@ interface Data {
   key: string;
   lists: TaskList[];
   items: TaskItem[];
+  sections: TaskSection[];
   completions: Completion[];
 }
 
@@ -106,12 +107,13 @@ function IndexSkeleton() {
 
 function DetailSkeleton() {
   return (
-    <div className="tk-stack">
-      {[0, 1].map((s) => (
-        <div key={s} className="tk-hist-section">
-          <Skel w={160} h={28} />
+    <div className="tk-hist-section">
+      <Skel w={160} h={28} />
+      {[0, 1, 2].map((g) => (
+        <div key={g} className="tk-hist-section">
+          <Skel w={120} h={24} />
           <div className="tk-rows">
-            {Array.from({ length: 6 }, (_, i) => <Skel key={i} h={44} r={0} />)}
+            {Array.from({ length: 3 }, (_, i) => <Skel key={i} h={44} r={0} />)}
           </div>
         </div>
       ))}
@@ -146,14 +148,16 @@ function Inner() {
           if (rows.length < PAGE) return all;
         }
       };
-      const [l, i, completions] = await Promise.all([
+      const [l, i, sec, completions] = await Promise.all([
         sb.from("task_lists").select("*").order("sort_order"),
         sb.from("task_items").select("*").order("sort_order"),
+        sb.from("task_sections").select("*").eq("active", true).order("sort_order"),
         comps(),
       ]);
       if (l.error) throw l.error;
       if (i.error) throw i.error;
-      return { key, lists: (l.data ?? []) as TaskList[], items: (i.data ?? []) as TaskItem[], completions };
+      if (sec.error) throw sec.error;
+      return { key, lists: (l.data ?? []) as TaskList[], items: (i.data ?? []) as TaskItem[], sections: (sec.data ?? []) as TaskSection[], completions };
     },
     [key],
     "the history",
@@ -304,27 +308,45 @@ function Detail({ data, date, today }: { data: Data; date: string; today: string
 
   return (
     <div className="tk-stack">
-      {night.lists.map((l) => (
-        <section key={l.list.id} className="tk-hist-section">
-          <h2>{l.list.name}</h2>
-          <p className="tk-hist-cap">{l.done} of {l.items.length} done</p>
-          <div className="tk-rows">
-            {l.items.map((i) => {
-              const c = byItem.get(i.id);
-              return (
-                <div key={i.id} className="tk-row tk-hist-row">
-                  {c ? <span className="tk-chip good">Done</span> : <span className="tk-chip danger">Not done</span>}
-                  <div className="tk-hist-title">
-                    <div>{i.title}</div>
-                    {c && <div className="tk-hist-removed">{c.done_by} at {timeHM(c.done_at)}</div>}
-                    {c?.note && <div className="tk-hist-note">{c.note}</div>}
-                  </div>
+      {night.lists.map((l) => {
+        const activeSecs = data.sections.filter((x) => x.list_id === l.list.id).sort((x, y) => x.sort_order - y.sort_order);
+        const secIds = new Set(activeSecs.map((x) => x.id));
+        const groups: { id: string; name: string | null; items: TaskItem[] }[] = [
+          { id: "none", name: null, items: l.items.filter((i) => !i.section_id || !secIds.has(i.section_id)) },
+          ...activeSecs.map((x) => ({ id: x.id, name: x.name as string | null, items: l.items.filter((i) => i.section_id === x.id) })),
+        ].filter((g) => g.items.length > 0);
+        return (
+          <section key={l.list.id} className="tk-hist-section">
+            <h2>{l.list.name}</h2>
+            <p className="tk-hist-cap">{l.done} of {l.items.length} done</p>
+            {groups.map((g) => (
+              <div key={g.id} className="tk-hist-section">
+                {g.name && (
+                  <>
+                    <h3>{g.name}</h3>
+                    <p className="tk-hist-cap">{g.items.filter((i) => byItem.has(i.id)).length} of {g.items.length} done</p>
+                  </>
+                )}
+                <div className="tk-rows">
+                  {g.items.map((i) => {
+                    const c = byItem.get(i.id);
+                    return (
+                      <div key={i.id} className="tk-row tk-hist-row">
+                        {c ? <span className="tk-chip good">Done</span> : <span className="tk-chip danger">Not done</span>}
+                        <div className="tk-hist-title">
+                          <div>{i.title}</div>
+                          {c && <div className="tk-hist-removed">{c.done_by} at {timeHM(c.done_at)}</div>}
+                          {c?.note && <div className="tk-hist-note">{c.note}</div>}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
-        </section>
-      ))}
+              </div>
+            ))}
+          </section>
+        );
+      })}
       {removed.length > 0 && (
         <section className="tk-hist-section">
           <h2>Other checks</h2>

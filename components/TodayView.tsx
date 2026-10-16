@@ -9,9 +9,9 @@ import { useLoad } from "@/lib/useLoad";
 import { AsyncView, Skel } from "@/components/AsyncView";
 import { useTasks } from "@/components/TasksProvider";
 import { serviceDateNow, timeHM } from "@/lib/paris";
-import { isoWeekday, type Completion, type TaskItem, type TaskList } from "@/lib/types";
+import { isoWeekday, type Completion, type TaskItem, type TaskList, type TaskSection } from "@/lib/types";
 
-interface TodayData { date: string; lists: TaskList[]; items: TaskItem[]; done: Completion[]; }
+interface TodayData { date: string; lists: TaskList[]; sections: TaskSection[]; items: TaskItem[]; done: Completion[]; }
 
 const WRITE_TIMEOUT_MS = 10_000;
 
@@ -62,20 +62,24 @@ function Check() {
 function TodaySkeleton() {
   return (
     <div className="tk-stack">
-      {[0, 1].map((s) => (
-        <section key={s} className="tk-today-section">
-          <Skel w={180} h={34} />
-          <Skel w={90} h={22} />
-          <div>
-            {[0, 1, 2, 3, 4, 5].map((r) => (
-              <div key={r} className="tk-today-skelrow">
-                <Skel w={24} h={24} r={4} />
-                <span className="tk-today-skeltext"><Skel w={`${50 + ((r * 13) % 30)}%`} h={18} /><Skel w="30%" h={14} /></span>
-              </div>
-            ))}
+      <section className="tk-today-section">
+        <Skel w={180} h={34} />
+        <Skel w={90} h={22} />
+        {[0, 1].map((g) => (
+          <div key={g} className="tk-today-group">
+            <Skel w={120} h={26} />
+            <Skel w={90} h={20} />
+            <div>
+              {[0, 1, 2, 3].map((r) => (
+                <div key={r} className="tk-today-skelrow">
+                  <Skel w={24} h={24} r={4} />
+                  <span className="tk-today-skeltext"><Skel w={`${50 + ((r * 13) % 30)}%`} h={18} /><Skel w="30%" h={14} /></span>
+                </div>
+              ))}
+            </div>
           </div>
-        </section>
-      ))}
+        ))}
+      </section>
     </div>
   );
 }
@@ -99,15 +103,17 @@ export function TodayView() {
 
   const load = useLoad<TodayData>(async () => {
     const sb = createClient();
-    const [l, i, c] = await Promise.all([
+    const [l, sc, i, c] = await Promise.all([
       sb.from("task_lists").select("id,name,kind,days,sort_order,active").order("sort_order"),
-      sb.from("task_items").select("id,list_id,title,detail,sort_order,active").eq("active", true).order("sort_order"),
+      sb.from("task_sections").select("id,list_id,name,sort_order,active").eq("active", true).order("sort_order"),
+      sb.from("task_items").select("id,list_id,section_id,title,detail,sort_order,active").eq("active", true).order("sort_order"),
       sb.from("task_completions").select("id,item_id,service_date,done_by,done_at,note").eq("service_date", date),
     ]);
     if (l.error) throw l.error;
+    if (sc.error) throw sc.error;
     if (i.error) throw i.error;
     if (c.error) throw c.error;
-    return { date, lists: (l.data ?? []) as TaskList[], items: (i.data ?? []) as TaskItem[], done: (c.data ?? []) as Completion[] };
+    return { date, lists: (l.data ?? []) as TaskList[], sections: (sc.data ?? []) as TaskSection[], items: (i.data ?? []) as TaskItem[], done: (c.data ?? []) as Completion[] };
   }, [date], "today's checks");
 
   const setData = load.set;
@@ -234,12 +240,44 @@ export function TodayView() {
           return (
             <div className="tk-stack">
               {lists.map((list) => {
-                const items = data.items.filter((i) => i.list_id === list.id && i.active).sort((a, b) => a.sort_order - b.sort_order);
+                const items = data.items.filter((i) => i.list_id === list.id && i.active);
+                const secs = data.sections.filter((x) => x.list_id === list.id && x.active).sort((x, y) => x.sort_order - y.sort_order);
+                const bySort = (x: TaskItem, y: TaskItem) => x.sort_order - y.sort_order;
+                const secIds = new Set(secs.map((x) => x.id));
+                const loose = items.filter((i) => !i.section_id || !secIds.has(i.section_id)).sort(bySort);
                 const doneCount = items.filter((i) => doneByItem.has(i.id)).length;
+                const rowsFor = (group: TaskItem[]) => (
+                  <div className="tk-rows tk-today-rows">
+                    {group.map((item) => {
+                      const c = doneByItem.get(item.id);
+                      const err = errors[item.id];
+                      return (
+                        <div key={item.id}>
+                          <div className="tk-row">
+                            <button type="button" className="tk-today-btn" aria-pressed={!!c} disabled={busy.has(item.id)} onClick={() => toggle(item, c)}>
+                              <span className="tk-today-mark" aria-hidden="true"><Check /></span>
+                              <span className="tk-today-text">
+                                <span className="tk-today-title">{item.title}</span>
+                                {c && <span className="tk-today-meta">Done by {c.done_by} at {timeHM(c.done_at)}</span>}
+                                {item.detail && <span className="tk-today-meta">{item.detail}</span>}
+                              </span>
+                            </button>
+                          </div>
+                          {err && (
+                            <div className="tk-today-rowerr" role="alert">
+                              <p>{err}</p>
+                              <button type="button" className="tk-btn tk-sm" onClick={() => toggle(item, c)}>Try Again</button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
                 return (
                   <section key={list.id} className="tk-today-section" aria-labelledby={`tk-list-${list.id}`}>
                     <h2 id={`tk-list-${list.id}`}>{list.name}</h2>
-                    {items.length === 0 ? (
+                    {items.length === 0 && secs.length === 0 ? (
                       <div className="tk-empty">
                         <p>No checks on this list yet.</p>
                         <Link href="/checks" className="tk-btn tk-sm">Manage Checks</Link>
@@ -247,32 +285,24 @@ export function TodayView() {
                     ) : (
                       <>
                         <p className="tk-today-progress">{doneCount} of {items.length} done</p>
-                        <div className="tk-rows tk-today-rows">
-                          {items.map((item) => {
-                            const c = doneByItem.get(item.id);
-                            const err = errors[item.id];
-                            return (
-                              <div key={item.id}>
-                                <div className="tk-row">
-                                  <button type="button" className="tk-today-btn" aria-pressed={!!c} disabled={busy.has(item.id)} onClick={() => toggle(item, c)}>
-                                    <span className="tk-today-mark" aria-hidden="true"><Check /></span>
-                                    <span className="tk-today-text">
-                                      <span className="tk-today-title">{item.title}</span>
-                                      {c && <span className="tk-today-meta">Done by {c.done_by} at {timeHM(c.done_at)}</span>}
-                                      {item.detail && <span className="tk-today-meta">{item.detail}</span>}
-                                    </span>
-                                  </button>
-                                </div>
-                                {err && (
-                                  <div className="tk-today-rowerr" role="alert">
-                                    <p>{err}</p>
-                                    <button type="button" className="tk-btn tk-sm" onClick={() => toggle(item, c)}>Try Again</button>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
+                        {loose.length > 0 && rowsFor(loose)}
+                        {secs.map((sec) => {
+                          const group = items.filter((i) => i.section_id === sec.id).sort(bySort);
+                          const n = group.filter((i) => doneByItem.has(i.id)).length;
+                          return (
+                            <div key={sec.id} className="tk-today-group">
+                              <h3 id={`tk-sec-${sec.id}`}>{sec.name}</h3>
+                              {group.length === 0 ? (
+                                <p className="tk-today-meta">No checks in {sec.name} yet.</p>
+                              ) : (
+                                <>
+                                  <p className="tk-today-progress">{n} of {group.length} done</p>
+                                  {rowsFor(group)}
+                                </>
+                              )}
+                            </div>
+                          );
+                        })}
                       </>
                     )}
                   </section>

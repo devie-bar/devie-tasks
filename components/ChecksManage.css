@@ -49,3 +49,12 @@
 :where(.tk-app) .tk-manage-add .tk-input{flex:1 1 220px}
 :where(.tk-app) .tk-manage-danger{display:grid;gap:12px;justify-items:start}
 :where(.tk-app) .tk-manage-danger p{margin:0;max-width:70ch}
+
+/* Sections: a group is a heading row with its actions, then its checks. Spacing groups them, no boxes. */
+:where(.tk-app) .tk-manage-checks{gap:32px}
+:where(.tk-app) .tk-manage-group{display:grid;gap:12px}
+:where(.tk-app) .tk-manage-sechead{display:grid;gap:8px}
+:where(.tk-app) .tk-manage-sechead.is-paused .tk-input{color:var(--dv-ink-soft)}
+:where(.tk-app) .tk-manage-group-h{display:flex;align-items:center;gap:8px;margin:0}
+:where(.tk-app) .tk-manage-group-h .tk-input{flex:1 1 auto;min-width:0}
+:where(.tk-app) .tk-manage-groupbody{display:grid;gap:16px}

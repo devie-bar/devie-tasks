@@ -13,9 +13,19 @@ export interface TaskList {
   active: boolean;
 }
 
+export interface TaskSection {
+  id: string;
+  list_id: string;
+  name: string;
+  sort_order: number;
+  active: boolean;
+}
+
 export interface TaskItem {
   id: string;
   list_id: string;
+  /** Null means the check sits in no section and is listed first. */
+  section_id: string | null;
   title: string;
   detail: string | null;
   sort_order: number;
